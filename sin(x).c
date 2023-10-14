@@ -50,6 +50,6 @@ float   sin_b(float x)
 
 int main(void)
 {
-    printf("%f", sin(0.0001));
+    printf("%f\n", sin_b(3));
     return (0);
 }
