@@ -36,7 +36,7 @@ float   sin_b(float x)
     float current;
     float sub_pc;
 
-    current = expo(-1, n) * expo(x, 2 * n + 1) / factorial(2 * n + 1);
+    current = x;
     sub_pc = fabs(prev - current);
     while (sub_pc >= 0.001)
     {
