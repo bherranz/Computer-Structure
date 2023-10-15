@@ -49,7 +49,7 @@ sin_loop:
         fmv.s fs4, fa0
         
         # factorial (2*n + 1) = a0
-        li t1, 0x80000000
+        li t1, 0x40000000
         fmv.w.x fs5, t1 # 2 in floating point
         fcvt.s.w fs6, s0
         fmul.s fa0, fs5, fs6 # 2*n
