@@ -38,8 +38,7 @@ def factorial_r(num: int) -> int:
 def sin(x: float) -> float:
     prev = 0
     n = 0
-    current = exponential(-1, n) * exponential(x, 2 * n + 1) / \
-        factorial(2 * n + 1)
+    current = x
     while abs(prev - current) > 0.001:
         n += 1
         prev = current
