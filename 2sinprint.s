@@ -4,7 +4,6 @@ A: .float 1.6, 2.0, 3.0
    .float 4.0, 5.0, 6.0
 B: .float 0.0, 0.0, 0.0
    .float 0.0, 0.0, 0.0
-elem: .string "Element: "
 
 .text
 
@@ -17,19 +16,6 @@ main:
 
     # Llama a la función SinMatrix para calcular B
     jal ra, SinMatrix
-
-    # Imprime la matriz A
-    la a0, A   # Carga la dirección de la matriz A en a0
-    la a1, B   # Carga la dirección de la matriz B en a1
-    li a2, 2   # Número de filas de la matriz A
-    li a3, 3   # Número de columnas de la matriz A
-	#    jal ra, printMatrix  # Función para imprimir la matriz A
-    # Imprime la matriz B
-    la a0, B   # Carga la dirección de la matriz B en a0
-    la a1, B   # Carga la dirección de la matriz B en a1
-    li a2, 2   # Número de filas de la matriz B
-    li a3, 3   # Número de columnas de la matriz B
-    #jal ra, printMatrix  # Función para imprimir la matriz A
 
     # Fin del programa
     li a7, 10  # Código de sistema para salir (exit)
@@ -206,53 +192,4 @@ end_sin:
 		addi sp, sp, 60
 		# exit
         jr ra
-
-printMatrix:
-    li t4, 0  # Inicializa un contador para las filas
-
-printMatrix_row_loop:
-    beq t4, a2, printMatrix_end  # Si hemos alcanzado todas las filas, terminamos
-
-    li t5, 0  # Inicializa un contador para las columnas
-
-printMatrix_col_loop:
-    beq t5, a3, printMatrix_row_next  # Si hemos alcanzado todas las columnas, avanzamos a la siguiente fila
-
-    # Calcula la dirección del elemento actual en la matriz
-    mul t6, t4, a3  # t6 = fila * número de columnas
-    add t6, t6, t5  # t6 = fila * número de columnas + columna
-    add t6, a0, t6  # t6 = dirección de la matriz + (fila * número de columnas + columna) * tamaño del elemento
-
-    # Carga el elemento actual en un registro
-    flw fa0, 0(t6)
-
-    # Imprime el elemento actual
-    fmv.x.w a4, fa0
-    li a7, 4  # Código de sistema para imprimir una cadena
-    la a0, elem
-    ecall
-    li a7, 1  # Código de sistema para imprimir un entero
-    ecall
-
-    # Imprime un espacio para separar los elementos
-    li a0, ' '
-    li a7, 11  # Código de sistema para imprimir un carácter
-    ecall
-
-    # Incrementa el contador de columnas
-    addi t5, t5, 1
-    j printMatrix_col_loop
-
-printMatrix_row_next:
-    # Imprime una nueva línea para pasar a la siguiente fila
-    li a0, '\n'
-    li a7, 11  # Código de sistema para imprimir un carácter
-    ecall
-
-    # Incrementa el contador de filas
-    addi t4, t4, 1
-    j printMatrix_row_loop
-
-printMatrix_end:
-    jr ra
     
