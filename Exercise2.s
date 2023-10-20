@@ -1,26 +1,4 @@
-.data
-# Definición de las matrices A y B
-A: .float 1.6, 2.0, 3.0
-   .float 4.0, 5.0, 6.0
-B: .float 0.0, 0.0, 0.0
-   .float 0.0, 0.0, 0.0
-
-.text
-
-main:
-    # Inicializa los registros a0, a1, a2 y a3
-    la a0, A   # Carga la dirección de la matriz A en a0
-    la a1, B   # Carga la dirección de la matriz B en a1
-    li a2, 2   # Número de filas de la matriz A
-    li a3, 3   # Número de columnas de la matriz A
-
-    # Llama a la función SinMatrix para calcular B
-    jal ra, SinMatrix
-
-    # Fin del programa
-    li a7, 10  # Código de sistema para salir (exit)
-    ecall
-    
+.text  
 SinMatrix:  # Address of matrix A: a0
 			# Address of matrix B: a1
             # Number of rows N: a2
@@ -38,7 +16,7 @@ SinMatrix:  # Address of matrix A: a0
             li s0, -1 # Initialize i = -1 (s0)
             li s2, 4 # Float size = 4 bytes
             loop_row:addi s0, s0, 1 # i++
-            		 li s1, -1 # Initialize j = 0 (s1)
+            		 li s1, -1 # Initialize j = -1 (s1)
             		 bge s0, a2, end_SM # while i < N
                      loop_col:  addi s1, s1, 1 # j++
                      			bge s1, a3, loop_row # while j < M
@@ -46,11 +24,11 @@ SinMatrix:  # Address of matrix A: a0
                                 add s3, s3, s1 # i * M + j
                                 mul s3, s3, s2 # (i * M + j) * float size(4)
                                 li s4, 0
-                                add s4, s3, a0
+                                add s4, s3, a0 # store the address of A[i][j]
                                 flw fa0, 0(s4) # load A[i][j]
                                 jal ra sin # sin(A[i][j])
                                 li s5, 0
-                                add s5, s3, a1
+                                add s5, s3, a1 # store the address of B[i][j]
                                 fsw fa0, 0(s5) # store sin(A[i][j]) in B[i][j]
                                 j loop_col
             end_SM: # Pop values from memory
@@ -67,7 +45,7 @@ SinMatrix:  # Address of matrix A: a0
                     jr ra
                      			
             
-# x = A[i][j] fa0
+# x = A[i][j], fa0
 sin:
 	# Push values into memory
 	addi sp, sp, -60 
@@ -87,37 +65,36 @@ sin:
     sw s4, 52(sp)
     sw ra, 56(sp)
     fmv.s fs0, fa0    # Inicializa current = x (current = fs0)
-    fmv.s fs1, fa0
+    fmv.s fs1, fa0	  # Store the value x
     li s0, 0 # n = 0
     # prev (fa3) = 0
     fsub.s fa1, fa3, fs0 # sub_pc = prev - current
     fabs.s fa1, fa1 # |sub_pc|
 		
     sin_loop:
-            # Comprueba si sub_pc >= 0.001
+            # Check if sub_pc >= 0.001
             li s1, 0x3A83126F # We insert the 0.001 rest value
             fmv.w.x fs2, s1
-            flt.s s2, fa1, fs2 # Compara sub_pc con 0.001
-            bnez s2, end_sin  # Si sub_pc >= 0.001, continúa el bucle
-
-            # current = fa1, expo(x, 2*n + 1) = ft3, expo(-1, n) = ft4, factorial(2*n + 1) = a0
-
+            flt.s s2, fa1, fs2 # Compare sub_pc with 0.001
+            bnez s2, end_sin  # If sub_pc >= 0.001, continue the loop
             addi s0, s0, 1 #n++
+			# current = fa1, expo(x, 2*n + 1) = ft3, expo(-1, n) = ft4, factorial(2*n + 1) = a0
+            
             # expo(x: base = fa0, 2*n + 1: ex, a3)  = ft3
             li s3, 2
             mul s3, s0, s3 # 2*n
             addi a5, s3, 1 # 2*n + 1
             fmv.s fa0, fs1
             jal ra expo
-            fmv.s fs3, fa0
+            fmv.s fs3, fa0 # store result
 
             #expo(-1: base, fa0, n: ex, a3) = ft4
-            li s4, 0xBF800000
+            li s4, 0xBF800000 # -1
             fmv.w.x fs4, s4
-            fmv.s fa0, fs4 # -1
+            fmv.s fa0, fs4 
             mv a5, s0
             jal ra expo
-            fmv.s fs4, fa0
+            fmv.s fs4, fa0 #store result
 
             # factorial (2*n + 1) = a0
             li t1, 0x40000000
@@ -128,8 +105,7 @@ sin:
             fmv.w.x fs7, t1	 # load 1 in floating point
             fadd.s fa0, fa0, fs7 # 2*n + 1
             jal ra factorial
-            fmv.s fs8, fa0 # ft0 for factorial
-
+            fmv.s fs8, fa0 # fs8 for factorial
 
             fmul.s ft1, fs3, fs4 # expo1 * expo2
             fdiv.s ft1, ft1, fs8 # expo1 * expo2 / factorial
@@ -160,7 +136,7 @@ factorial:
 			li t1, 0x3F800000 # load address one
         	fmv.w.x ft5, t1 # load register ft5 = 1 for count
         	fmv.w.x ft6, t1 # load register ft6 = 1 for result
-            fmv.w.x ft8, t1
+            fmv.w.x ft8, t1 # load register ft8 = 1 to sum
 			loop:   flt.s t5, fa0, ft5 # fa0 for num
             		bnez t5, end_f
 					fmul.s ft6, ft6, ft5 # result = result * count
