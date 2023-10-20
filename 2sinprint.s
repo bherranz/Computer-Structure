@@ -35,7 +35,7 @@ SinMatrix:  # Address of matrix A: a0
             sw s4, 8(sp)
             sw s5, 4(sp)
 			sw ra, 0(sp)
-            li s0, 0 # Initialize i = -1 (s0)
+            li s0, -1 # Initialize i = -1 (s0)
             li s2, 4 # Float size = 4 bytes
             loop_row:addi s0, s0, 1 # i++
             		 li s1, -1 # Initialize j = 0 (s1)
