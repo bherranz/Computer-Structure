@@ -3,7 +3,6 @@
 float   exponential(float base, int exp)
 {
     float   current;
-
     if (exp == 0)
         return (1);
     current = base;
@@ -19,7 +18,6 @@ float   factorial(int num)
 {
     float   count = 1;
     float   result = 1;
-
     while (count <= num)
     {
         result = result * count;
@@ -34,7 +32,6 @@ float   ft_sin(float x)
     float   prev = 0;
     int     n = 0;
     float   current = x;
-
     while (fabs(prev - current) > 0.001)
     {
         n++;
@@ -50,7 +47,6 @@ float   ft_cos(float x)
     float   prev = 0;
     int     n = 0;
     float   current = 1;
-
     while (fabs(prev - current) > 0.001)
     {
         n++;
@@ -73,7 +69,6 @@ float   E(void)
     float   prev = 0;
     int     n = 0;
     float   current = 1;
-
     while (fabs(prev - current) > 0.001)
     {
         prev = current;
