@@ -1,4 +1,4 @@
-
+.text
 SinMatrix:  # Address of matrix A: a0
 			# Address of matrix B: a1
             # Number of rows N: a2
