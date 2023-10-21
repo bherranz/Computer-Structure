@@ -204,7 +204,8 @@ cos:
             j cos_loop
 
 tg: # Push
-    addi sp, sp, -36
+    addi sp, sp, -40
+    fsw fs4, 36(sp)
     fsw fs0, 32(sp)
     fsw fs1, 28(sp)
     fsw fs2, 24(sp)
@@ -225,14 +226,16 @@ tg: # Push
     # cos(x)
     jal ra cos
     fmv.s fs2, fa0
-    fle.s s2, fs2, fs0  # If cos(x)/fs2 is <= 0.001(fs0) we do not perform operation 
+    fmv.s fs4, fa0 # store cos(x)
+    fabs.s fs2, fs2 # |cos(x)|
+    fle.s s2, fs2, fs0  # If |cos(x)| is <= 0.001(fs0) we do not perform operation 
     bnez s2 end_tg2
     fmv.s fa0, fs1
     # sin(x)
     jal ra sin
     fmv.s fs3, fa0
     # sin(x)/cos(x)
-    fdiv.s fa0, fs3, fs2
+    fdiv.s fa0, fs3, fs4
     j end_tg
     end_tg2:
     	li s3, 0x7F800000
@@ -250,7 +253,8 @@ tg: # Push
         flw fs2, 24(sp)
         flw fs1, 28(sp)
         flw fs0, 32(sp)
-        addi sp, sp, 36
+        flw fs4, 36(sp)
+        addi sp, sp, 40
     	jr ra
     	
 
