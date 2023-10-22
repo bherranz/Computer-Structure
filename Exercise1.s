@@ -34,10 +34,10 @@ sin:
             flt.s s2, fa1, fs2 # Compare sub_pc con 0.001
             bnez s2, end_sin  # If sub_pc >= 0.001, continue in the loop
 
-            # current = fa1, expo(x, 2*n + 1) = fs3, expo(-1, n) = fs4, factorial(2*n + 1) = fs8
+            # current = fs0, expo(x, 2*n + 1) = fs3, expo(-1, n) = fs4, factorial(2*n + 1) = fs8
 
             addi s0, s0, 1 #n++
-            # expo(x: base = fa0, 2*n + 1: ex, a1)  = fs3
+            # expo(x: base = fa0, 2*n + 1: ex = a1)  = fs3
             li s3, 2
             mul s3, s0, s3 # 2*n
             addi a1, s3, 1 # 2*n + 1
@@ -45,7 +45,7 @@ sin:
             jal ra expo
             fmv.s fs3, fa0
 
-            #expo(-1: base, fa0, n: ex, a1) = fs4
+            #expo(-1: base = fa0, n: ex = a1) = fs4
             li s4, 0xBF800000
             fmv.w.x fs4, s4
             fmv.s fa0, fs4 # -1
@@ -53,7 +53,7 @@ sin:
             jal ra expo
             fmv.s fs4, fa0
 
-            # factorial (2*n + 1) = fs8
+            # factorial ((2*n + 1): base = fa0) = fs8
             li t1, 0x40000000
             fmv.w.x fs5, t1 # 2 in floating point
             fcvt.s.w fs6, s0 # fs6 = s0(n)
@@ -112,14 +112,14 @@ cos:
             # current = fs0, expo(x, 2*n) = fs3, expo(-1, n) = fs4, factorial(2*n) = fs8
 
             addi s0, s0, 1 #n++
-            # expo(x: base = fa0, 2*n: ex, a1)  = fs3
+            # expo(x: base = fa0, 2*n: ex = a1)  = fs3
             li s3, 2
             mul a1, s0, s3 # 2*n
             fmv.s fa0, fs1
             jal ra expo
             fmv.s fs3, fa0
 
-            #expo(-1: base, fa0, n: ex, a1) = fs4
+            #expo(-1: base = fa0, n: ex = a1) = fs4
             li s4, 0xBF800000
             fmv.w.x fs4, s4
             fmv.s fa0, fs4 # -1
@@ -127,13 +127,13 @@ cos:
             jal ra expo
             fmv.s fs4, fa0
 
-            # factorial (2*n) = fa0
+            # factorial ((2*n): base = fa0) = fs7
             li t1, 0x40000000
             fmv.w.x fs5, t1 # 2 in floating point
             fcvt.s.w fs6, s0
             fmul.s fa0, fs5, fs6 # 2*n
             jal ra factorial
-            fmv.s fs7, fa0 # ft0 for factorial
+            fmv.s fs7, fa0 # fs7 for factorial
 
 
             fmul.s ft1, fs3, fs4 # expo1 * expo2
@@ -166,24 +166,22 @@ tg: # Push
 	fmv.s fs1, fa0
     # cos(x)
     jal ra cos
-    fmv.s fs2, fa0
-    fmv.s fs4, fa0 # store cos(x)
-    fabs.s fs2, fs2 # |cos(x)|
-    fle.s s2, fs2, fs0  # If |cos(x)| is <= 0.001(fs0) we do not perform operation 
+    fmv.s fs2, fa0 # result of cos(x) in fs2
+    fmv.s fs4, fa0 # store cos(x) to perform absolute value
+    fabs.s fs4, fs4 # |cos(x)|
+    fle.s s2, fs4, fs0  # If |cos(x)| is <= 0.001(fs0) we do not perform operation 
     bnez s2 end_tg2
     fmv.s fa0, fs1
     # sin(x)
     jal ra sin
     fmv.s fs3, fa0
     # sin(x)/cos(x)
-    fdiv.s fa0, fs3, fs4
+    fdiv.s fa0, fs3, fs2
     j end_tg
     end_tg2:
     	li s3, 0x7F800000
         fmv.w.x fa0, s3
     end_tg:
-    	li a7, 2
-        ecall
     	# Pull
     	lw ra, 0(sp)
         flw fs3, 4(sp)
@@ -258,7 +256,7 @@ expo:	# ex = a1, fa0 = base
         end_expo: jr ra
 
 factorial:  
-			li t1, 0x3F800000 # load address one
+			li t1, 0x3F800000 # load one in floating point
         	fmv.w.x ft5, t1 # load register ft5 = 1 for count
         	fmv.w.x ft6, t1 # load register ft6 = 1 for result
             fmv.w.x ft8, t1
