@@ -59,7 +59,7 @@ float   ft_cos(float x)
 
 float   ft_tg(float x)
 {
-    if (ft_cos(x) < 0.001)
+    if (fabs(ft_cos(x)) < 0.001)
         return (1.0 / 0.0); // Positive infinity
     return (ft_sin(x) / ft_cos(x));
 }
