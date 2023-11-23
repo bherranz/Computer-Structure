@@ -1,0 +1,44 @@
+
+.data
+ a: .word 35, 15
+ b: .word 10, 20
+.text
+no_ext:
+				la t5, a
+				lw t1, 0(t5)
+        lw t2, 4(t5)
+        la t5, b
+        lw t3, 0(t5)
+        lw t4, 4(t5)
+        beq t1, t3, product
+        beq t2, t4, product
+        add a0, t1, t3
+        add a1, t2, t4
+				ret
+	product: mul a0, t1, t3
+  				 mul a1, t2, t4
+           ret
+with_ext:
+					la t1, a
+          la t2, b
+					lc a0, a1, (t1)
+        	lc t3, t4, (t2)
+          beq t1, t2, t3, t4, main
+          addc a0, a1, t3, t4
+          ret
+go: mulc a0, zero, t3, zero
+ 					mulc a1, zero, t4, zero
+ 					ret
+main: rdcycle s0
+ la a0, a
+ la a1, b
+ call with_ext
+ rdcycle s1
+ sub s1 s1 s0
+ rdcycle s0
+ la a0, a
+ la a1, b
+ call no_ext
+ rdcycle s2
+ sub s2 s2 s0
+ hcf 
