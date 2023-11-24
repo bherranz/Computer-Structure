@@ -42,10 +42,8 @@ sc Rr1, Rr2, (Rr3) {
       (MR = 0, SelA = 10101, T9, M1 = 0, C1),
     # MEM[MAR] <- MBR
       (TA, TD, W, BW = 11),
-    # RT3 <- Rr3 + 4
-      (MR = 0, SelA = 01011, MA = 0, MB = 10, MC = 1, SelCop = 1010, C6),
-    # MAR <- RT3
-      (T7, C0),
+    # MAR <- Rr3 + 4
+      (MR = 0, SelA = 01011, MA = 0, MB = 10, MC = 1, SelCop = 1010, C6, T6, C0),
     # MBR <- Rr2
       (MR = 0, SelA = 10000, T9, M1 = 0, C1),
     # MEM[MAR] <- MBR and jump fetch
@@ -65,10 +63,8 @@ lc Rr1, Rr2, (Rr3) {
       (TA, R, BW = 11, M1 = 1, C1),
     # Rr1 <- MBR
       (T1, MR = 0, SelC = 10101, LC = 1),
-    # RT3 <- Rr3 + 4
-      (MR = 0, SelA = 01011, MA = 0, MB = 10, MC, SelCop = 1010, C6),
-    # MAR <- RT3
-      (T7, C0),
+    # MAR <- Rr3 + 4
+      (MR = 0, SelA = 01011, MA = 0, MB = 10, MC, SelCop = 1010, C6, T6, C0),
     # MBR <- MEM[MAR]
       (TA, R, BW = 11, M1 = 1, C1),
     # Rr2 <- MBR
