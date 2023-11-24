@@ -123,7 +123,7 @@ mulc Rr1, Rr2, Rr3, Rr4 {
 }
 }
 
-beq Rr1, Rr2, Rr3, Rr4, S6 {
+beqc Rr1, Rr2, Rr3, Rr4, S6 {
   co = 110100,
 	nwords = 1,
   Rr1 = reg(25, 21),
