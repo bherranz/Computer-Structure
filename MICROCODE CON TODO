@@ -1,0 +1,317 @@
+begin
+{
+         # ensure R0 is zero
+         (EXCODE=0, T11, MR=1, SelC=0, LC=1),
+
+  fetch: # MAR <- PC
+         # MBR <- Mem[MAR]
+         # IR  <- MBR, PC <- PC + 4
+         # jump to associated microcode for op. code
+         (T2, C0),
+         (TA, R, BW=11, M1=1, C1=1),
+         (M2, C2, T1, C3),
+         (A0, B=0, C=0)
+}
+
+rdcycle reg1  {
+      co=111111,
+      nwords=1,
+      reg1=reg(25,21),
+      help='reg1 = load accumulated clock cycles',
+      {
+           (MH=1, T12=1, SELC=10101, LC=1, A0=1, B=1, C=0)
+      }
+}
+
+add reg1 reg2 reg3 {
+      co=111111,
+      nwords=1,
+      reg1=reg(25,21),
+      reg2=reg(20,16),
+      reg3=reg(15,11),
+      help='r1 = r2 + r3',
+      {
+          (MC=1, MR=0, SELA=1011, SELB=10000, MA=0, MB=0, SELCOP=1010, T6=1, SELC=10101, LC=1, SELP=11, M7, C7, A0=1, B=1, C=0)
+      }
+}
+
+sub reg1 reg2 reg3 {
+      co=111111,
+      nwords=1,
+      reg1=reg(25,21),
+      reg2=reg(20,16),
+      reg3=reg(15,11),
+      help='r1 = r2 - r3',
+      {
+          (MC=1, MR=0, SELB=1011, SELA=10000, MA=0, MB=0, SELCOP=1011, T6=1, SELC=10101, LC=1, SELP=11, M7, C7, A0=1, B=1, C=0)
+      }
+}
+
+mul reg1 reg2 reg3 {
+      co=111111,
+      nwords=1,
+      reg1=reg(25,21),
+      reg2=reg(20,16),
+      reg3=reg(15,11),
+      help='reg1 = reg2 * reg3',
+      {
+          (MC=1, MR=0, SELA=1011, SELB=10000, MA=0, MB=0, SELCOP=1100, T6=1, SELC=10101, LC=1, SELP=11, M7, C7, A0=1, B=1, C=0)
+      }
+}
+
+lw rd offset(rs1) {
+      co=111111,
+      nwords=1,
+      rd=reg(25,21),
+      offset=inm(15,0),
+      rs1=reg(20,16),
+      help='rd = (MEM[rs1+offset+3] .. MEM[rs1+offset])',
+      {
+          (SE=1, OFFSET=0, SIZE=10000, T3=1, C5=1),
+          (MR=0, SELA=10000, MA=0, MB=1, MC=1, SELCOP=1010, T6=1, C0=1),
+          (TA=1, R=1, BW=11, M1=1, C1=1),
+          (T1=1, LC=1, MR=0, SELC=10101, A0=1, B=1, C=0)
+      }
+}
+
+sw reg1 val(reg2) {
+      co=111111,
+      nwords=1,
+      reg1 = reg(25,21),
+      val  = inm(15,0),
+      reg2 = reg(20,16),
+      help='MEM[rs1+offset+3 .. rs1+offset] = rs2',
+      {
+          (SE=1, OFFSET=0, SIZE=10000, T3=1, C5=1),
+          (MR=0, SELA=10000, MA=0, MB=1, MC=1, SELCOP=1010, T6=1, C0=1),
+          (MR=0,  SELA=10101, T9=1, M1=0, C1=1),
+          (BW=11, TA=1, TD=1, W=1,  A0=1, B=1, C=0)
+      }
+}
+
+beq rs1 rs2 offset {
+      co=111111,
+      nwords=1,
+      rs1=reg(25,21),
+      rs2=reg(20,16),
+      offset=address(15,0)rel,
+      help='if (rs1 == rs2) pc += offset',
+      {
+           (T8, C5),
+           (SELA=10101, SELB=10000, MC=1, SELCOP=1011, SELP=11, M7, C7),
+           (A0=0, B=1, C=110, MADDR=bck2ftch2),
+           (T5, M7=0, C7),
+           (T2, C4),
+           (SE=1, OFFSET=0, SIZE=10000, T3, C5),
+           (MA=1, MB=1, MC=1, SELCOP=1010, T6, C2, A0=1, B=1, C=0),
+bck2ftch2: (T5, M7=0, C7),
+           (A0=1, B=1, C=0)
+      }
+}
+
+#Complex numbers
+  
+la Rr3, U32 {
+   co=010001,
+   nwords=2,
+   Rr3 = reg(25,21),
+   U32 = address(63, 32)abs,
+   {   
+     # MAR <- PC
+       (T2, C0),
+     # MBR <- MEM[MAR], PC <- PC + 4
+       (Ta, R, BW=11, M1=1, C1, M2, C2),
+     # Rr3 <- MBR, Jump to fetch
+       (T1, LC, MR = 0, SelC = 010101, A0 = 1, B = 1, C = 0),
+  
+   }
+}
+
+sc Rr1, Rr2, (Rr3) {	
+  co = 010010,
+  nwords = 1,
+  Rr1 = reg(25, 21),
+  Rr2 = reg(20, 16),
+  Rr3 = reg(15, 11)
+  {
+    # MAR <- Rr3
+    	(MR = 0, SelA = 01011, T9, C0),
+    # MBR <- Rr1
+      (MR = 0, SelA = 10101, T9, M1 = 0, C1),
+    # MEM[MAR] <- MBR
+      (TA, TD, W, BW = 11),
+    # MAR <- Rr3 + 4
+      (MR = 0, SelA = 01011, MA = 0, MB = 10, MC = 1, SelCop = 1010, C6, T6, C0),
+    # MBR <- Rr2
+      (MR = 0, SelA = 10000, T9, M1 = 0, C1),
+    # MEM[MAR] <- MBR and jump fetch
+      (TA, TD, W, BW = 11, A0 = 1, B = 1, C = 0)
+	}
+}
+
+lc Rr1, Rr2, (Rr3) {
+  co = 010011,
+  Rr1 = reg(25, 21),
+  Rr2 = reg(20, 16),
+  Rr3 = reg(15, 11)
+  {
+    # MAR <- Rr3
+    	(MR = 0, SelA = 01011, T9, C0),
+    # MBR <- MEM[MAR]
+      (TA, R, BW = 11, M1 = 1, C1),
+    # Rr1 <- MBR
+      (T1, MR = 0, SelC = 10101, LC = 1),
+    # MAR <- Rr3 + 4
+      (MR = 0, SelA = 01011, MA = 0, MB = 10, MC, SelCop = 1010, C6, T6, C0),
+    # MBR <- MEM[MAR]
+      (TA, R, BW = 11, M1 = 1, C1),
+    # Rr2 <- MBR
+      (T1, MR = 0, SelC = 10000, LC = 1, A0 = 1, B = 1, C = 0)
+	}
+}
+
+addc Rr1, Rr2, Rr3, Rr4 {
+  	co=010100,
+  	nwords=1,
+		Rr1=reg(25,21),
+		Rr2=reg(20,16),
+		Rr3=reg(15,11),
+  	Rr4=reg(10,6),
+  {
+    # Rr1 <- Rr1 + Rr3
+  	(LC, MA = 0, MB = 00, MR = 0, SelA = 10101, SelB = 01011, SelC = 10101, SelCop = 01010, MC = 1, T6),
+    # Rr2 <- Rr2 + Rr4 and j fetch
+  	(LC, MA = 0, MB = 00, MR = 0, SelA = 10000, SelB = 00110, SelC = 10000, SelCop = 01010, MC = 1, T6, A0=1, B=1, C=0),
+	}
+}
+mulc Rr1, Rr2, Rr3, Rr4 {
+  	co=010101,
+  	nwords=1,
+		Rr1=reg(25,21),
+		Rr2=reg(20,16),
+		Rr3=reg(15,11),
+  	Rr4=reg(10,6),
+  {
+    # RT1 <- Rr1*Rr3
+  	(MA = 0, MB = 00, MR = 0, SelA = 10101, SelB = 01011, SelCop = 01100, MC = 1, T6, C4),
+    # RT2 <- Rr2*Rr4
+		(MA = 0, MB = 00, MR = 0, SelA = 10000, SelB = 00110, SelCop = 01100, MC = 1, T6, C5),
+    # RT3 <- RT1 - RT2
+		(MA = 1, MB = 01, SelCop = 01011, MC = 1, C6),
+    # RT1 <- Rr1*Rr4
+  	(MA = 0, MB = 00, MR = 0, SelA = 10101, SelB = 00110, SelCop = 01100, MC = 1, T6, C4),
+    # RT2 <- Rr2*Rr3
+		(MA = 0, MB = 00, MR = 0, SelA = 10000, SelB = 01011, SelCop = 01100, MC = 1, T6, C5),
+    # Rr2 <- RT1 + RT2
+		(LC, MA = 1, MB = 01, SelCop = 01010, MC = 1, T6, MR = 0, SelC = 10000),
+    # Rr1 <- RT3, Jump to fetch
+		(T7, LC, SelC = 10101, MR = 0, A0 = 1, B = 1, C = 0),
+    
+}
+}
+
+beqc Rr1, Rr2, Rr3, Rr4, S6 {
+  co = 110100,
+	nwords = 1,
+  Rr1 = reg(25, 21),
+  Rr2 = reg(20, 16),
+  Rr3 = reg(15, 11),
+  Rr4 = reg(10, 6),
+  S6 = address(5, 0)rel,
+  {
+    # MBR <- SR
+    	(T8, C1),
+    # SR.Z <- Rr1 - Rr3
+			(MR = 0, SelA = 10101, SelB = 01011, MA = 0,
+       MB = 00, MC = 1, SelCop = 1011, SelP = 11, M7, C7),
+    # SR.Z != 0, jump to beq8
+    	(C = 110, B = 1, A0 = 0, Maddr = beq8),
+    # SR.Z <- Rr2 - Rr4
+			(MR = 0, SelA = 10000, SelB = 00110, MA = 0,
+       MB = 00, MC = 1, SelCop = 1011, SelP = 11, M7, C7),
+    # SR.Z != 0, jump to beq8
+    	(C = 110, B = 1, A0 = 0, Maddr = beq8),
+    # RT1 <- PC
+			(T2, C4),
+    # RT2 <- IR(S6)
+			(size = 00110, OFFSET = 0, SE = 1, T3, C5),
+    # PC <- RT1 + RT2
+			(MA = 1, MB = 1, MC = 1, SelCop = 1010, T6, M2 = 0 ,C2),
+    beq8: # SR <- MBR and j fetch
+	(T1, M7 = 0, C7, A0 = 1, B = 1, C = 0),
+  }
+}
+
+call U20 {
+  co = 100001,
+  nwords = 1
+  U20 = inm(19, 0),
+ {
+  # R1 (ra) <- PC
+  (T2, LC, SelC = 00001, MR = 1),
+  # PC <- U20 and j fetch
+	(Size = 10100, Offset = 0, T3, M2 = 0, C2, A0=1, B=1, C=0),
+}
+}
+ret {
+  co = 100010,
+  nwords = 1,
+ {
+  # PC <- R1  and j fetch
+  (MR = 1, SelA = 00001, T9, M2 = 0, C2, A0 = 1, B = 1, C = 0),
+}
+}
+hcf {
+  co = 100011,
+  nwords = 1,
+ {
+  # PC <- R0, SR <- R0 and j fetch
+  (MR = 1, SelA = 00000, T9, M2 = 0, C2, M7 = 0, C7, A0 = 1, B = 1, C = 0),
+	}
+}
+
+
+registers
+{
+    0=(zero,  R0),
+    1=(ra,    R1),
+    2=(sp,    R2) (stack_pointer),
+    3=(gp,    R3),
+    4=(tp,    R4),
+    5=(t0,    R5),
+    6=(t1,    R6),
+    7=(t2,    R7),
+    8=(s0,    R8),
+    9=(s1,    R9),
+    10=(a0,  R10),
+    11=(a1,  R11),
+    12=(a2,  R12),
+    13=(a3,  R13),
+    14=(a4,  R14),
+    15=(a5,  R15),
+    16=(a6,  R16),
+    17=(a7,  R17),
+    18=(s2,  R18),
+    19=(s3,  R19),
+    20=(s4,  R20),
+    21=(s5,  R21),
+    22=(s6,  R22),
+    23=(s7,  R23),
+    24=(s8,  R24),
+    25=(s9,  R25),
+    26=(s10, R26),
+    27=(s11, R27),
+    28=(t3,  R28),
+    29=(t4,  R29),
+    30=(t5,  R30),
+    31=(t6,  R31)
+}
+
+
+
+
+
+
+
+
+
