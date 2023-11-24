@@ -1,6 +1,6 @@
 .data
  a: .word 35, 15
- b: .word 10, 20
+ b: .word 35, 15
 .text
 no_ext:
 				lw t1, 0(a0)
@@ -16,7 +16,7 @@ no_ext:
   				 mul a1, t2, t4
            ret
 with_ext:
-					lc t0, t1, (a0)
+					lc t1, t2, (a0)
         	lc t3, t4, (a1)
           beqc t1, t2, t3, t4, go
           addc a0, a1, t3, t4
