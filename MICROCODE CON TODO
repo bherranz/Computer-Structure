@@ -111,122 +111,122 @@ bck2ftch2: (T5, M7=0, C7),
 
 #Complex numbers
   
-la Rr3, U32 {
+la RR1, U32 {
    co=010001,
    nwords=2,
-   Rr3 = reg(25,21),
+   RR1 = reg(25,21),
    U32 = address(63, 32)abs,
    {   
      # MAR <- PC
        (T2, C0),
      # MBR <- MEM[MAR], PC <- PC + 4
        (Ta, R, BW=11, M1=1, C1, M2, C2),
-     # Rr3 <- MBR, Jump to fetch
+     # RR3 <- MBR, Jump to fetch
        (T1, LC, MR = 0, SelC = 010101, A0 = 1, B = 1, C = 0),
   
    }
 }
 
-sc Rr1, Rr2, (Rr3) {	
+sc RR1, RR2, (RR3) {	
   co = 010010,
   nwords = 1,
-  Rr1 = reg(25, 21),
-  Rr2 = reg(20, 16),
-  Rr3 = reg(15, 11)
+  RR1 = reg(25, 21),
+  RR2 = reg(20, 16),
+  RR3 = reg(15, 11)
   {
-    # MAR <- Rr3
+    # MAR <- RR3
     	(MR = 0, SelA = 01011, T9, C0),
-    # MBR <- Rr1
+    # MBR <- RR1
       (MR = 0, SelA = 10101, T9, M1 = 0, C1),
     # MEM[MAR] <- MBR
       (TA, TD, W, BW = 11),
-    # MAR <- Rr3 + 4
+    # MAR <- RR3 + 4
       (MR = 0, SelA = 01011, MA = 0, MB = 10, MC = 1, SelCop = 1010, C6, T6, C0),
-    # MBR <- Rr2
+    # MBR <- RR2
       (MR = 0, SelA = 10000, T9, M1 = 0, C1),
     # MEM[MAR] <- MBR and jump fetch
       (TA, TD, W, BW = 11, A0 = 1, B = 1, C = 0)
 	}
 }
 
-lc Rr1, Rr2, (Rr3) {
+lc RR1, RR2, (RR3) {
   co = 010011,
-  Rr1 = reg(25, 21),
-  Rr2 = reg(20, 16),
-  Rr3 = reg(15, 11)
+  RR1 = reg(25, 21),
+  RR2 = reg(20, 16),
+  RR3 = reg(15, 11)
   {
-    # MAR <- Rr3
+    # MAR <- RR3
     	(MR = 0, SelA = 01011, T9, C0),
     # MBR <- MEM[MAR]
       (TA, R, BW = 11, M1 = 1, C1),
-    # Rr1 <- MBR
+    # RR1 <- MBR
       (T1, MR = 0, SelC = 10101, LC = 1),
-    # MAR <- Rr3 + 4
+    # MAR <- RR3 + 4
       (MR = 0, SelA = 01011, MA = 0, MB = 10, MC, SelCop = 1010, C6, T6, C0),
     # MBR <- MEM[MAR]
       (TA, R, BW = 11, M1 = 1, C1),
-    # Rr2 <- MBR
+    # RR2 <- MBR
       (T1, MR = 0, SelC = 10000, LC = 1, A0 = 1, B = 1, C = 0)
 	}
 }
 
-addc Rr1, Rr2, Rr3, Rr4 {
+addc RR1, RR2, RR3, RR4 {
   	co=010100,
   	nwords=1,
-		Rr1=reg(25,21),
-		Rr2=reg(20,16),
-		Rr3=reg(15,11),
-  	Rr4=reg(10,6),
+		RR1=reg(25,21),
+		RR2=reg(20,16),
+		RR3=reg(15,11),
+  	RR4=reg(10,6),
   {
-    # Rr1 <- Rr1 + Rr3
+    # RR1 <- RR1 + RR3
   	(LC, MA = 0, MB = 00, MR = 0, SelA = 10101, SelB = 01011, SelC = 10101, SelCop = 01010, MC = 1, T6),
-    # Rr2 <- Rr2 + Rr4 and j fetch
+    # RR2 <- RR2 + RR4 and j fetch
   	(LC, MA = 0, MB = 00, MR = 0, SelA = 10000, SelB = 00110, SelC = 10000, SelCop = 01010, MC = 1, T6, A0=1, B=1, C=0),
 	}
 }
-mulc Rr1, Rr2, Rr3, Rr4 {
+mulc RR1, RR2, RR3, RR4 {
   	co=010101,
   	nwords=1,
-		Rr1=reg(25,21),
-		Rr2=reg(20,16),
-		Rr3=reg(15,11),
-  	Rr4=reg(10,6),
+		RR1=reg(25,21),
+		RR2=reg(20,16),
+		RR3=reg(15,11),
+  	RR4=reg(10,6),
   {
-    # RT1 <- Rr1*Rr3
+    # RT1 <- RR1*RR3
   	(MA = 0, MB = 00, MR = 0, SelA = 10101, SelB = 01011, SelCop = 01100, MC = 1, T6, C4),
-    # RT2 <- Rr2*Rr4
+    # RT2 <- RR2*RR4
 		(MA = 0, MB = 00, MR = 0, SelA = 10000, SelB = 00110, SelCop = 01100, MC = 1, T6, C5),
     # RT3 <- RT1 - RT2
 		(MA = 1, MB = 01, SelCop = 01011, MC = 1, C6),
-    # RT1 <- Rr1*Rr4
+    # RT1 <- RR1*RR4
   	(MA = 0, MB = 00, MR = 0, SelA = 10101, SelB = 00110, SelCop = 01100, MC = 1, T6, C4),
-    # RT2 <- Rr2*Rr3
+    # RT2 <- RR2*RR3
 		(MA = 0, MB = 00, MR = 0, SelA = 10000, SelB = 01011, SelCop = 01100, MC = 1, T6, C5),
-    # Rr2 <- RT1 + RT2
+    # RR2 <- RT1 + RT2
 		(LC, MA = 1, MB = 01, SelCop = 01010, MC = 1, T6, MR = 0, SelC = 10000),
-    # Rr1 <- RT3, Jump to fetch
+    # RR1 <- RT3, Jump to fetch
 		(T7, LC, SelC = 10101, MR = 0, A0 = 1, B = 1, C = 0),
     
 }
 }
 
-beqc Rr1, Rr2, Rr3, Rr4, S6 {
+beqc RR1, RR2, RR3, RR4, S6 {
   co = 110100,
 	nwords = 1,
-  Rr1 = reg(25, 21),
-  Rr2 = reg(20, 16),
-  Rr3 = reg(15, 11),
-  Rr4 = reg(10, 6),
+  RR1 = reg(25, 21),
+  RR2 = reg(20, 16),
+  RR3 = reg(15, 11),
+  RR4 = reg(10, 6),
   S6 = address(5, 0)rel,
   {
     # MBR <- SR
     	(T8, C1),
-    # SR.Z <- Rr1 - Rr3
+    # SR.Z <- RR1 - RR3
 			(MR = 0, SelA = 10101, SelB = 01011, MA = 0,
        MB = 00, MC = 1, SelCop = 1011, SelP = 11, M7, C7),
     # SR.Z != 0, jump to beq8
     	(C = 110, B = 1, A0 = 0, Maddr = beq8),
-    # SR.Z <- Rr2 - Rr4
+    # SR.Z <- RR2 - RR4
 			(MR = 0, SelA = 10000, SelB = 00110, MA = 0,
        MB = 00, MC = 1, SelCop = 1011, SelP = 11, M7, C7),
     # SR.Z != 0, jump to beq8
