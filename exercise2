@@ -1,25 +1,26 @@
 .data
- a: .word 1, 2
- b: .word 1, 1
+ a: .word 35, 15
+ b: .word 10, 20
 .text
 no_ext:
 				lw t1, 0(a0)
         lw t2, 4(a0)
         lw t3, 0(a1)
         lw t4, 4(a1)
-        beq t1, t3, first
+        beq t1, t3, imaginary
         #real part
         add a0, t1, t3
         #imaginary part
         add a1, t2, t4
 				ret
-  first: beq t2, t4, product
+imaginary: beq t2, t4, product
   			 #real part
          add a0, t1, t3
          #imaginary part
          add a1, t2, t4
 				 ret
-	product: # real part
+	product: # perform the multiplication
+  				 # real part
   				 mul t5, t1, t3
   				 mul t6, t2, t4
            sub a0, t5, t6
@@ -49,3 +50,4 @@ main: rdcycle s0
  rdcycle s2
  sub s2 s2 s0
  hcf 
+# as result, the program return 45 + 35i
