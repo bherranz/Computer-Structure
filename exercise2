@@ -1,6 +1,6 @@
 .data
- a: .word 30, 10
- b: .word 35, 15
+ a: .word 1, 2
+ b: .word 1, 1
 .text
 no_ext:
 				lw t1, 0(a0)
