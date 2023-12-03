@@ -9,20 +9,30 @@ no_ext:
         lw t4, 4(a1)
         beq t1, t3, product
         beq t2, t4, product
+        #real part
         add a0, t1, t3
+        #imaginary part
         add a1, t2, t4
 				ret
-	product: mul a0, t1, t3
-  				 mul a1, t2, t4
+        
+	product: # real part
+  				 mul t5, t1, t3
+  				 mul t6, t2, t4
+           sub a0, t5, t6
+           # imaginary part
+  				 mul t5, t1, t4
+           mul t6, t2, t3
+           add a1, t5, t6
            ret
-with_ext:
+with_ext: 
 					lc t1, t2, (a0)
-        	lc t3, t4, (a1)
+					lc t3, t4, (a1)    
           beqc t1, t2, t3, t4, go
-          addc a0, a1, t3, t4
+          addc t1, t2, t3, t4
+          sc t1, t2 (a0)
           ret
-go: mulc t0, zero, t3, zero
- 					mulc t1, zero, t4, zero
+go: 			mulc t1, t2, t3, t4
+          sc t1, t2 (a0)
  					ret
 main: rdcycle s0
  la a0, a
